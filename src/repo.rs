@@ -7,6 +7,36 @@ pub struct RepositoryStatus {
     origin_url: String,
 }
 
+impl RepositoryStatus {
+    pub fn new(repo: &Repository) -> RepositoryStatus {
+        let statuses = repo.statuses(None).unwrap();
+        let name = repo
+            .path()
+            .parent()
+            .unwrap()
+            .file_name()
+            .unwrap()
+            .to_str()
+            .unwrap()
+            .to_owned();
+
+        let origin_url = match repo.find_remote("origin") {
+            Ok(ref remote) => remote
+                .url()
+                .expect("URL for origin could not be found")
+                .to_owned(),
+            Err(_) => String::new(),
+        };
+        let status_flags = statuses_to_string(statuses);
+
+        RepositoryStatus {
+            name,
+            status_flags,
+            origin_url,
+        }
+    }
+}
+
 struct StatusFlags {
     new: bool,
     modified: bool,
@@ -78,36 +108,6 @@ pub fn explore_path(path: &Path, repositories: &mut Vec<Repository>) {
                     explore_path(&child.path(), repositories);
                 }
             }
-        }
-    }
-}
-
-impl RepositoryStatus {
-    pub fn new(repo: &Repository) -> RepositoryStatus {
-        let statuses = repo.statuses(None).unwrap();
-        let name = repo
-            .path()
-            .parent()
-            .unwrap()
-            .file_name()
-            .unwrap()
-            .to_str()
-            .unwrap()
-            .to_owned();
-
-        let origin_url = match repo.find_remote("origin") {
-            Ok(ref remote) => remote
-                .url()
-                .expect("URL for origin could not be found")
-                .to_owned(),
-            Err(_) => String::new(),
-        };
-        let status_flags = statuses_to_string(statuses);
-
-        RepositoryStatus {
-            name,
-            status_flags,
-            origin_url,
         }
     }
 }
