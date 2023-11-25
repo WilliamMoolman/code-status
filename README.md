@@ -4,10 +4,12 @@ Inspired by a fear that there is some code somewhere on my computer that has not
 # Installation
 Currently this has not been uploaded to crates.io, so installation is from source.
 ```sh
-git clone https://github.com/WilliamMoolman/code-status
-cd code-status
-cargo build r
-cp target/release/code-status ~/.local/bin/
+$ git clone https://github.com/WilliamMoolman/code-status
+$ cd code-status
+$ cargo build r
+$ cp target/release/code-status ~/.local/bin/
+$ code-status -V
+code-status 0.1.0
 ```
 > [!TIP]
 > Make sure ~/.local/bin is on your PATH!
