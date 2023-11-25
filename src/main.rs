@@ -2,7 +2,7 @@ use clap::Parser;
 use git2::Repository;
 use std::path::Path;
 mod repo;
-use repo::{explore_path, print_statuses, RepositoryStatus};
+use repo::{explore_path, print_long, print_summary, RepositoryStatus};
 
 /// A CLI tool to get the status of many git repositories
 #[derive(Parser, Debug)]
@@ -15,6 +15,14 @@ struct Args {
     /// Display origin url
     #[arg(short, long)]
     url: bool,
+
+    /// Display long format
+    #[arg(short, long)]
+    long: bool,
+
+    /// Display clean repositories
+    #[arg(short, long)]
+    clean: bool,
 }
 
 fn main() {
@@ -27,5 +35,9 @@ fn main() {
     let repository_statuses: Vec<RepositoryStatus> =
         repositories.iter().map(RepositoryStatus::new).collect();
 
-    print_statuses(repository_statuses, args.url);
+    if args.long {
+        print_long(repository_statuses, args.url, args.clean);
+    } else {
+        print_summary(repository_statuses);
+    }
 }

@@ -3,7 +3,7 @@ use std::path::Path;
 
 pub struct RepositoryStatus {
     name: String,
-    status_flags: String,
+    status_flags: StatusFlags,
     origin_url: String,
 }
 
@@ -58,6 +58,10 @@ impl StatusFlags {
         }
     }
 
+    fn clean(&self) -> bool {
+        !self.new && !self.modified && !self.deleted && !self.renamed && !self.push && !self.pull
+    }
+
     fn to_string(&self) -> String {
         let mut s = String::new();
         let mut add_flag = |add: bool, icon: char| {
@@ -77,7 +81,7 @@ impl StatusFlags {
     }
 }
 
-fn statuses_to_string(statuses: Statuses<'_>) -> String {
+fn statuses_to_string(statuses: Statuses<'_>) -> StatusFlags {
     let mut flags = StatusFlags::new();
 
     for entry in statuses.iter() {
@@ -95,7 +99,7 @@ fn statuses_to_string(statuses: Statuses<'_>) -> String {
             flags.renamed = true;
         }
     }
-    flags.to_string()
+    flags
 }
 
 pub fn explore_path(path: &Path, repositories: &mut Vec<Repository>) {
@@ -112,13 +116,16 @@ pub fn explore_path(path: &Path, repositories: &mut Vec<Repository>) {
     }
 }
 
-pub fn print_statuses(statuses: Vec<RepositoryStatus>, url: bool) {
+pub fn print_long(statuses: Vec<RepositoryStatus>, url: bool, show_clean: bool) {
     let max_repo_name_length = statuses.iter().map(|x| x.name.len()).max().unwrap_or(0);
     for status in statuses.iter() {
+        if status.status_flags.clean() && !show_clean {
+            continue;
+        }
         print!(
             "{:<width$} {}",
             status.name,
-            status.status_flags,
+            status.status_flags.to_string(),
             width = max_repo_name_length
         );
         if url {
@@ -127,4 +134,59 @@ pub fn print_statuses(statuses: Vec<RepositoryStatus>, url: bool) {
             println!();
         }
     }
+}
+
+struct Summary {
+    clean: u32,
+    dirty: u32,
+    modified: u32,
+    untracked: u32,
+    unsynced: u32,
+}
+
+impl Summary {
+    fn new() -> Summary {
+        Summary {
+            clean: 0,
+            dirty: 0,
+            modified: 0,
+            untracked: 0,
+            unsynced: 0,
+        }
+    }
+
+    fn print(&self) {
+        println!("{} clean repositories", self.clean);
+        if self.dirty > 0 {
+            println!("{} repositories in dirty state, of which:", self.dirty);
+        }
+        if self.modified > 0 {
+            println!("\t{} repositories with modified files", self.modified);
+        }
+        if self.untracked > 0 {
+            println!("\t{} repositories with untracked files", self.untracked);
+        }
+        if self.unsynced > 0 {
+            println!("\t{} repositories with unsynced commits", self.unsynced);
+        }
+    }
+}
+
+pub fn print_summary(statuses: Vec<RepositoryStatus>) {
+    let mut summary = Summary::new();
+    for status in statuses.iter() {
+        if status.status_flags.clean() {
+            summary.clean += 1;
+        } else {
+            summary.dirty += 1;
+        }
+        if status.status_flags.modified {
+            summary.modified += 1;
+        }
+        if status.status_flags.new {
+            summary.untracked += 1;
+        }
+        // TODO: check if there are commits to push/pull
+    }
+    summary.print();
 }

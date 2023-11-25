@@ -24,12 +24,20 @@ Arguments:
 
 Options:
   -u, --url      Display origin url
+  -l, --long     Display long format
+  -c, --clean    Display clean repositories
   -h, --help     Print help
   -V, --version  Print version
 
-$ code-status -u ~/code
+$ code-status -u -l -c ~/code
 rustlings                   -M---- https://github.com/rust-lang/rustlings
 moolman-dev                 N-D--- git@github.com:WilliamMoolman/moolman-dev.git
 bingo                       ------ git@github.com:WilliamMoolman/BingoCards.git
 QuickBudget                 NM---- git@github.com:WilliamMoolman/QuickBudget.git
+
+$ code-status ~/code
+1 clean repositories
+3 repositories in dirty state, of which:
+    2 repositories with modified files
+    3 repositories with untracked files
 ```
