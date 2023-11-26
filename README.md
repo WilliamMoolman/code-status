@@ -26,8 +26,9 @@ Arguments:
 
 Options:
   -u, --url      Display origin url
-  -l, --long     Display long format
+  -s, --summary  Display summary format
   -c, --clean    Display clean repositories
+  -t, --tree     Display in tree form
   -h, --help     Print help
   -V, --version  Print version
 

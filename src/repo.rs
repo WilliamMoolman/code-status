@@ -1,14 +1,18 @@
 use git2::{Repository, Statuses};
+use pathdiff::diff_paths;
 use std::path::Path;
+
+use crate::tree::RepoTree;
 
 pub struct RepositoryStatus {
     name: String,
+    long_name: String,
     status_flags: StatusFlags,
     origin_url: String,
 }
 
 impl RepositoryStatus {
-    pub fn new(repo: &Repository) -> RepositoryStatus {
+    pub fn new(repo: &Repository, base_path: &Path) -> RepositoryStatus {
         let statuses = repo.statuses(None).unwrap();
         let name = repo
             .path()
@@ -19,6 +23,12 @@ impl RepositoryStatus {
             .to_str()
             .unwrap()
             .to_owned();
+
+        let long_name_full = repo.path().parent().unwrap().to_str().unwrap().to_owned();
+        let long_name = match diff_paths(&long_name_full, base_path) {
+            Some(path) => path.to_str().unwrap().to_owned(),
+            None => long_name_full,
+        };
 
         let origin_url = match repo.find_remote("origin") {
             Ok(ref remote) => remote
@@ -31,6 +41,7 @@ impl RepositoryStatus {
 
         RepositoryStatus {
             name,
+            long_name,
             status_flags,
             origin_url,
         }
@@ -124,7 +135,7 @@ pub fn print_long(statuses: Vec<RepositoryStatus>, url: bool, show_clean: bool) 
         }
         print!(
             "{:<width$} {}",
-            status.name,
+            status.long_name,
             status.status_flags.to_string(),
             width = max_repo_name_length
         );
@@ -134,6 +145,23 @@ pub fn print_long(statuses: Vec<RepositoryStatus>, url: bool, show_clean: bool) 
             println!();
         }
     }
+}
+
+pub fn print_long_tree(statuses: Vec<RepositoryStatus>, url: bool, show_clean: bool) {
+    let statuses = statuses
+        .iter()
+        .filter(|x| show_clean || !x.status_flags.clean())
+        .collect::<Vec<_>>();
+
+    let mut tree: RepoTree = RepoTree::new("".to_string());
+    for status in statuses.iter() {
+        let mut path = status.long_name.clone() + " (" + &status.status_flags.to_string() + ")";
+        if url {
+            path += &status.origin_url;
+        }
+        tree.add_path(path)
+    }
+    tree.print();
 }
 
 struct Summary {
