@@ -68,7 +68,8 @@ impl RepoTree {
     }
 
     pub fn print(&self) {
-        self.print_children(self.root_id, "")
+        self.print_children(self.root_id, "");
+        println!();
     }
 
     fn print_children(&self, parent_id: NodeId, prefix: &str) {
@@ -81,15 +82,24 @@ impl RepoTree {
         if children.len() == 0 {
             return;
         }
+        if children.len() == 1 {
+            // Collapse branch
+            let child = self.tree.get(children[0]).unwrap();
+            print!("/{}", child.data());
+            self.print_children(children[0], prefix);
+            return;
+        }
         let last_id = *children.last().unwrap();
         for child_id in children {
             let sibling = self.tree.get(child_id).unwrap();
             if child_id != last_id {
-                println!("{}{}{}", prefix, TEE, sibling.data());
+                println!();
+                print!("{}{}{}", prefix, TEE, sibling.data());
                 let new_prefix = String::from(prefix) + PIPE;
                 self.print_children(child_id, &new_prefix)
             } else {
-                println!("{}{}{}", prefix, ELBOW, sibling.data());
+                println!();
+                print!("{}{}{}", prefix, ELBOW, sibling.data());
                 let new_prefix = String::from(prefix) + SPACE;
                 self.print_children(child_id, &new_prefix)
             }
