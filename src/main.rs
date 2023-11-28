@@ -32,14 +32,16 @@ struct Args {
 
 fn main() {
     let args = Args::parse();
-    let path = Path::new(&args.path);
+    let path = Path::new(&args.path).canonicalize().unwrap();
 
     let mut repositories: Vec<Repository> = vec![];
-    explore_path(path, &mut repositories);
+    explore_path(&path, &mut repositories);
+
+    println!("{}", path.to_str().unwrap());
 
     let repository_statuses: Vec<RepositoryStatus> = repositories
         .iter()
-        .map(|repo| RepositoryStatus::new(repo, path))
+        .map(|repo| RepositoryStatus::new(repo, &path))
         .collect();
 
     if !args.summary {
