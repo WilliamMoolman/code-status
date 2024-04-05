@@ -1,8 +1,13 @@
 # Code Status: Multi Repository Git Status
+[![Crates Status]][Crates Link]
+
+[Crates Status]: https://img.shields.io/crates/v/code-status.svg
+[Crates Link]: https://crates.io/crates/code-status
+
 Inspired by a fear that there is some code somewhere on my computer that has not been commited and pushed. Written in Rust, this cli program recursively looks for git repositories from a root folder (Like `~/code`!) and gives a status overview for each.
 
 # Installation
-Currently this has not been uploaded to crates.io, so installation is from source.
+## From source
 ```sh
 $ git clone https://github.com/WilliamMoolman/code-status
 $ cd code-status
@@ -14,6 +19,12 @@ code-status 0.1.0
 > [!TIP]
 > Make sure ~/.local/bin is on your PATH!
 
+## From crates.io
+```sh
+$ cargo install code-status
+$ code-status -V
+code-status 0.1.0
+```
 # Usage
 ```sh
 $ code-status -h                             
