@@ -5,7 +5,7 @@ mod repo;
 mod tree;
 use repo::{explore_path, print_long, print_long_tree, print_summary, RepositoryStatus};
 
-/// A CLI tool to get the status of many git repositories
+/// Clap parser CLI arguments
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {
